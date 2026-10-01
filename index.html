@@ -1,0 +1,662 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>YS-Smart Study App Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* Layout: phone mockup + Speaking Helper Cards side by side, two tabs (Example / Build). Students can personalise their app's logo and accent colour in the Build tab. */
+  :root{
+    --bg:#eef1f6;
+    --panel:#ffffff;
+    --ink:#12172b;
+    --sub:#5b6478;
+    --line:#dde2ec;
+    --navy:#0b1230;
+    --accent:#2f5fff;
+    --presenter:#2f5fff;
+    --developer:#1c8a53;
+    --coach:#e07b1a;
+    --mark-bg:rgba(47,95,255,.16);
+    --font-display:'Poppins',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,sans-serif;
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1220;
+      --panel:#171c2e;
+      --ink:#eef1f8;
+      --sub:#aab2c8;
+      --line:#2a3150;
+      --navy:#05070f;
+      --mark-bg:rgba(96,140,255,.26);
+      color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1220;
+    --panel:#171c2e;
+    --ink:#eef1f8;
+    --sub:#aab2c8;
+    --line:#2a3150;
+    --navy:#05070f;
+    --mark-bg:rgba(96,140,255,.26);
+    color-scheme:dark;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    margin:0;
+    padding-inline:16px;
+    padding-block:24px;
+    min-height:100%;
+  }
+  html,body{height:100%}
+
+  .wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+
+  .eyebrow{
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--sub);
+  }
+  h1{
+    font-family:var(--font-display);
+    font-size:clamp(23px,4vw,31px);
+    font-weight:800;
+    margin:2px 0 0;
+    text-wrap:balance;
+  }
+
+  .tabs{
+    display:flex;
+    gap:8px;
+    border-bottom:1px solid var(--line);
+    padding-bottom:0;
+    flex-wrap:wrap;
+  }
+  .tab-btn{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:15px;
+    padding:10px 16px;
+    border:none;
+    background:none;
+    color:var(--sub);
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+    margin-bottom:-1px;
+  }
+  .tab-btn[aria-selected="true"]{
+    color:var(--accent);
+    border-bottom-color:var(--accent);
+  }
+  .tab-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .view{display:none}
+  .view.active{display:block}
+
+  .board{
+    display:grid;
+    grid-template-columns:minmax(230px,300px) 1fr;
+    gap:22px;
+    align-items:start;
+  }
+  @media (max-width:640px){
+    .board{grid-template-columns:1fr}
+  }
+
+  /* Phone mockup */
+  .phone-shell{
+    background:var(--navy);
+    border-radius:36px;
+    padding:14px;
+    box-shadow:0 20px 40px -20px rgba(0,0,0,.5);
+  }
+  .phone-notch{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:2px 0 10px;
+  }
+  .phone-notch .cam{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#000;
+    border:1.5px solid rgba(255,255,255,.18);
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+  }
+  .phone-screen{
+    --live-accent:var(--accent);
+    background:var(--panel);
+    border-radius:24px;
+    padding:20px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:15px;
+    min-height:480px;
+  }
+  .app-header{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .app-logo{
+    width:42px;
+    height:42px;
+    border-radius:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:21px;
+    background:var(--bg);
+    border:2px solid var(--live-accent);
+    flex-shrink:0;
+    overflow:hidden;
+  }
+  .app-logo img{width:100%;height:100%;object-fit:cover;border-radius:11px}
+  .app-title{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:20px;
+    letter-spacing:.01em;
+  }
+  .field-label{
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    color:var(--ink);
+    opacity:.72;
+    margin-bottom:5px;
+    display:block;
+  }
+  .field{margin-bottom:2px}
+  .field input, .field textarea{
+    width:100%;
+    font-family:var(--font-body);
+    font-size:15px;
+    color:var(--ink);
+    background:transparent;
+    border:none;
+    border-bottom:1px dashed var(--line);
+    padding:5px 2px 7px;
+    resize:none;
+  }
+  .field input:focus, .field textarea:focus{
+    outline:none;
+    border-bottom:1px solid var(--live-accent);
+  }
+  .field-static{
+    font-size:15px;
+    line-height:1.5;
+    padding:5px 2px 7px;
+    border-bottom:1px solid transparent;
+  }
+  .field-static.app-name-caps{
+    text-transform:uppercase;
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:17px;
+    letter-spacing:.03em;
+  }
+  .section-label{
+    font-size:13px;
+    font-weight:700;
+    color:var(--live-accent);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    border-bottom:1px solid var(--line);
+    padding-bottom:5px;
+    margin-top:6px;
+  }
+  mark.lang{
+    background:var(--mark-bg);
+    color:inherit;
+    font-weight:700;
+    padding:0 3px;
+    border-radius:4px;
+  }
+
+  /* Logo picker (Build tab) */
+  .logo-picker{margin-top:2px}
+  .logo-options{
+    display:flex;
+    align-items:center;
+    gap:7px;
+    flex-wrap:wrap;
+  }
+  .logo-opt{
+    width:34px;
+    height:34px;
+    border-radius:10px;
+    border:1.5px solid var(--line);
+    background:var(--panel);
+    font-size:16px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+  }
+  .logo-opt[aria-pressed="true"]{
+    border-color:var(--live-accent);
+    box-shadow:0 0 0 2px color-mix(in srgb, var(--live-accent) 25%, transparent);
+  }
+  .logo-upload{
+    font-family:var(--font-body);
+    font-size:12px;
+    font-weight:600;
+    color:var(--sub);
+    border:1.5px dashed var(--line);
+    border-radius:10px;
+    padding:8px 10px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+  }
+  .logo-upload:hover{border-color:var(--live-accent);color:var(--ink)}
+
+  /* Colour picker (Build tab) */
+  .theme-picker{margin-top:4px}
+  .swatches{display:flex;gap:8px;flex-wrap:wrap}
+  .swatch{
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    border:2px solid transparent;
+    cursor:pointer;
+    padding:0;
+  }
+  .swatch[aria-pressed="true"]{
+    border-color:var(--ink);
+    box-shadow:0 0 0 2px var(--panel), 0 0 0 4px var(--live-accent);
+  }
+
+  /* Speaking Helper Cards */
+  .cards-col{display:flex;flex-direction:column;gap:12px}
+  .cards-head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .cards-head .ico{font-size:17px;line-height:1}
+  .cards-title{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:15px;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    margin:0;
+    color:var(--ink);
+  }
+  .cards{display:flex;flex-direction:column;gap:12px}
+  .card{
+    border-radius:16px;
+    padding:16px 18px;
+    color:#fff;
+    display:flex;
+    gap:12px;
+  }
+  .card .num{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:22px;
+    line-height:1;
+    opacity:.85;
+  }
+  .card .role{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.03em;
+    text-transform:uppercase;
+    margin-bottom:5px;
+  }
+  .card p{margin:0;font-size:15px;line-height:1.55}
+  .card mark.lang{background:rgba(255,255,255,.28);color:#fff}
+  .card .blank{
+    font-style:italic;
+    opacity:.75;
+    text-decoration:underline dotted;
+    text-underline-offset:3px;
+  }
+  .card.presenter{background:var(--presenter)}
+  .card.developer{background:var(--developer)}
+  .card.coach{background:var(--coach)}
+
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    flex-wrap:wrap;
+    margin-top:18px;
+  }
+  .toolbar input[type="text"]{
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:9px 10px;
+    font-family:var(--font-body);
+    font-size:14px;
+    background:var(--panel);
+    color:var(--ink);
+    max-width:220px;
+  }
+  button.action{
+    font-family:var(--font-body);
+    font-weight:600;
+    font-size:14px;
+    padding:10px 16px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:var(--panel);
+    color:var(--ink);
+    cursor:pointer;
+  }
+  button.action:hover{border-color:var(--accent)}
+  button.action:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  .hint{
+    font-size:14px;
+    color:var(--sub);
+    line-height:1.55;
+    max-width:68ch;
+  }
+</style>
+
+<div class="wrap">
+  <div>
+    <div class="eyebrow">Smart Study App: Hacks For Learning · 26ENG.10.2.S3.01</div>
+    <h1>Smart Study App Builder</h1>
+  </div>
+
+  <div class="tabs" role="tablist" aria-label="Study app views">
+    <button class="tab-btn" id="tab-example" role="tab" aria-selected="true" aria-controls="view-example">See the Model</button>
+    <button class="tab-btn" id="tab-build" role="tab" aria-selected="false" aria-controls="view-build">Build Your App</button>
+  </div>
+
+  <section id="view-example" class="view active" role="tabpanel" aria-labelledby="tab-example">
+    <p class="hint">This is a finished model. Notice how the language in the app screen (<mark class="lang">will</mark> / <mark class="lang">is going to</mark> / <mark class="lang">should</mark> / <mark class="lang">had better not</mark>) matches the Speaking Helper Cards, then switch to "Build Your App" to make your own.</p>
+    <div class="board">
+      <div class="phone-shell">
+        <div class="phone-notch"><span class="cam"></span></div>
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="app-logo" aria-hidden="true">🎯</div>
+            <div class="app-title">SMART STUDY APP</div>
+          </div>
+          <div>
+            <span class="field-label">App Name</span>
+            <div class="field-static app-name-caps">FocusPal</div>
+          </div>
+          <div>
+            <span class="field-label">Slogan</span>
+            <div class="field-static">Less scrolling, more knowing.</div>
+          </div>
+          <div class="section-label">Planned Features</div>
+          <div>
+            <span class="field-label">1</span>
+            <div class="field-static">Our app <mark class="lang">will</mark> track how many minutes you spend on each app.</div>
+          </div>
+          <div>
+            <span class="field-label">2</span>
+            <div class="field-static">It <mark class="lang">is going to</mark> send you a gentle reminder after fifteen minutes of scrolling.</div>
+          </div>
+          <div class="section-label">Study Coach Tips</div>
+          <div>
+            <span class="field-label">Study Advice</span>
+            <div class="field-static">Students <mark class="lang">should</mark> put their phone in another room while studying.</div>
+          </div>
+          <div>
+            <span class="field-label">Urgent Warning</span>
+            <div class="field-static">You <mark class="lang">had better not</mark> check your phone every time it buzzes.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-col">
+        <div class="cards-head"><span class="ico" aria-hidden="true">🗣️</span><h2 class="cards-title">Speaking Helper Cards</h2></div>
+        <div class="cards">
+          <div class="card presenter">
+            <div class="num">1</div>
+            <div>
+              <div class="role">The Presenter</div>
+              <p>Hello everyone! In our group, we focused on the problem of endless scrolling. That's why we designed FocusPal. Our slogan is "Less scrolling, more knowing."</p>
+            </div>
+          </div>
+          <div class="card developer">
+            <div class="num">2</div>
+            <div>
+              <div class="role">The Developer</div>
+              <p>Our app has two main features. First, it <mark class="lang">will</mark> track how many minutes you spend on each app automatically when you start revising. Second, it <mark class="lang">is going to</mark> send you a gentle reminder after fifteen minutes of scrolling so that you can keep track of your daily study goals.</p>
+            </div>
+          </div>
+          <div class="card coach">
+            <div class="num">3</div>
+            <div>
+              <div class="role">The Study Coach</div>
+              <p>Here is our advice for exam week: students <mark class="lang">should</mark> put their phone in another room while studying every day. Most importantly, you <mark class="lang">had better not</mark> check your phone every time it buzzes, or you will fail to prepare well!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-build" class="view" role="tabpanel" aria-labelledby="tab-build" hidden>
+    <p class="hint">Type your group's ideas into the phone screen. The Speaking Helper Cards on the right fill in by themselves as you type, so your group can read straight from them when you rehearse. Pick a logo and a colour to make the app your own.</p>
+    <div class="board">
+      <div class="phone-shell">
+        <div class="phone-notch"><span class="cam"></span></div>
+        <div class="phone-screen">
+          <div class="app-header">
+            <div class="app-logo" id="logo-preview"><span id="logo-placeholder">+</span></div>
+            <div class="app-title">SMART STUDY APP</div>
+          </div>
+
+          <div class="logo-picker">
+            <span class="field-label">Choose a Logo</span>
+            <div class="logo-options">
+              <button type="button" class="logo-opt" data-emoji="🎯" aria-pressed="false" title="Target">🎯</button>
+              <button type="button" class="logo-opt" data-emoji="⚡" aria-pressed="false" title="Bolt">⚡</button>
+              <button type="button" class="logo-opt" data-emoji="🧠" aria-pressed="false" title="Brain">🧠</button>
+              <button type="button" class="logo-opt" data-emoji="📚" aria-pressed="false" title="Books">📚</button>
+              <button type="button" class="logo-opt" data-emoji="🔥" aria-pressed="false" title="Fire">🔥</button>
+              <button type="button" class="logo-opt" data-emoji="⭐" aria-pressed="false" title="Star">⭐</button>
+              <label class="logo-upload">Upload<input type="file" id="logo-file" accept="image/*" hidden></label>
+            </div>
+          </div>
+
+          <div class="theme-picker">
+            <span class="field-label">App Colour</span>
+            <div class="swatches" id="swatches">
+              <button type="button" class="swatch" style="background:#2f5fff" data-color="#2f5fff" aria-pressed="true" aria-label="Blue"></button>
+              <button type="button" class="swatch" style="background:#1c8a53" data-color="#1c8a53" aria-pressed="false" aria-label="Green"></button>
+              <button type="button" class="swatch" style="background:#e07b1a" data-color="#e07b1a" aria-pressed="false" aria-label="Orange"></button>
+              <button type="button" class="swatch" style="background:#d6336c" data-color="#d6336c" aria-pressed="false" aria-label="Pink"></button>
+              <button type="button" class="swatch" style="background:#7048e8" data-color="#7048e8" aria-pressed="false" aria-label="Purple"></button>
+              <button type="button" class="swatch" style="background:#0ca5b0" data-color="#0ca5b0" aria-pressed="false" aria-label="Teal"></button>
+            </div>
+          </div>
+
+          <div class="field">
+            <span class="field-label">App Name</span>
+            <input id="in-name" type="text" placeholder="Click to type" maxlength="40">
+          </div>
+          <div class="field">
+            <span class="field-label">Slogan</span>
+            <input id="in-slogan" type="text" placeholder="Click to type" maxlength="60">
+          </div>
+          <div class="section-label">Planned Features</div>
+          <div class="field">
+            <span class="field-label">1. Our app will...</span>
+            <textarea id="in-feat1" rows="2" placeholder="Type here"></textarea>
+          </div>
+          <div class="field">
+            <span class="field-label">2. It is going to...</span>
+            <textarea id="in-feat2" rows="2" placeholder="Type here"></textarea>
+          </div>
+          <div class="section-label">Study Coach Tips</div>
+          <div class="field">
+            <span class="field-label">Study Advice: Students should...</span>
+            <textarea id="in-advice" rows="2" placeholder="Type here"></textarea>
+          </div>
+          <div class="field">
+            <span class="field-label">Urgent Warning: You had better not...</span>
+            <textarea id="in-warning" rows="2" placeholder="Type here"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="cards-col">
+        <div class="cards-head"><span class="ico" aria-hidden="true">🗣️</span><h2 class="cards-title">Speaking Helper Cards</h2></div>
+        <div class="cards">
+          <div class="card presenter">
+            <div class="num">1</div>
+            <div>
+              <div class="role">The Presenter</div>
+              <p>Hello everyone! In our group, we focused on the problem of <span class="fill blank" data-src="challenge">your chosen challenge</span>. That's why we designed <span class="fill blank" data-src="name">your app name</span>. Our slogan is "<span class="fill blank" data-src="slogan">your slogan</span>."</p>
+            </div>
+          </div>
+          <div class="card developer">
+            <div class="num">2</div>
+            <div>
+              <div class="role">The Developer</div>
+              <p>Our app has two main features. First, it will <span class="fill blank" data-src="feat1">feature one</span> automatically when you start revising. Second, it is going to <span class="fill blank" data-src="feat2">feature two</span> so that you can keep track of your daily study goals.</p>
+            </div>
+          </div>
+          <div class="card coach">
+            <div class="num">3</div>
+            <div>
+              <div class="role">The Study Coach</div>
+              <p>Here is our advice for exam week: students should <span class="fill blank" data-src="advice">your study advice</span> every day. Most importantly, you had better not <span class="fill blank" data-src="warning">your urgent warning</span>, or you will fail to prepare well!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <span class="field-label" style="margin:0">Study Challenge</span>
+      <input id="in-challenge" type="text" placeholder="e.g. endless scrolling">
+      <button class="action" id="reset-btn">Clear for Next Group</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+  var fields = {
+    name: document.getElementById('in-name'),
+    slogan: document.getElementById('in-slogan'),
+    feat1: document.getElementById('in-feat1'),
+    feat2: document.getElementById('in-feat2'),
+    advice: document.getElementById('in-advice'),
+    warning: document.getElementById('in-warning'),
+    challenge: document.getElementById('in-challenge')
+  };
+  var fillEls = document.querySelectorAll('.fill');
+
+  function refresh(){
+    fillEls.forEach(function(el){
+      var key = el.getAttribute('data-src');
+      var f = fields[key];
+      var val = f ? f.value.trim() : '';
+      if(val){
+        el.textContent = val;
+        el.classList.remove('blank');
+      } else {
+        el.textContent = el.getAttribute('data-placeholder') || el.textContent;
+        el.classList.add('blank');
+      }
+    });
+  }
+  // remember original placeholder text for each blank once, before first edit
+  fillEls.forEach(function(el){
+    el.setAttribute('data-placeholder', el.textContent);
+  });
+  Object.keys(fields).forEach(function(key){
+    var el = fields[key];
+    if(el){ el.addEventListener('input', refresh); }
+  });
+
+  // Tabs
+  var tabExample = document.getElementById('tab-example');
+  var tabBuild = document.getElementById('tab-build');
+  var viewExample = document.getElementById('view-example');
+  var viewBuild = document.getElementById('view-build');
+
+  function showTab(which){
+    var onExample = which === 'example';
+    tabExample.setAttribute('aria-selected', onExample ? 'true' : 'false');
+    tabBuild.setAttribute('aria-selected', onExample ? 'false' : 'true');
+    viewExample.classList.toggle('active', onExample);
+    viewBuild.classList.toggle('active', !onExample);
+    viewExample.hidden = !onExample;
+    viewBuild.hidden = onExample;
+  }
+  tabExample.addEventListener('click', function(){ showTab('example'); });
+  tabBuild.addEventListener('click', function(){ showTab('build'); });
+
+  // Logo picker: preset emoji options or a student's own uploaded image
+  var logoPreview = document.getElementById('logo-preview');
+  var logoOpts = document.querySelectorAll('.logo-opt');
+  var logoFile = document.getElementById('logo-file');
+  var DEFAULT_LOGO_HTML = '<span id="logo-placeholder">+</span>';
+
+  function selectLogoOpt(btn){
+    logoOpts.forEach(function(o){ o.setAttribute('aria-pressed', o === btn ? 'true' : 'false'); });
+  }
+  logoOpts.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      logoPreview.textContent = btn.getAttribute('data-emoji');
+      selectLogoOpt(btn);
+    });
+  });
+  logoFile.addEventListener('change', function(){
+    var file = logoFile.files && logoFile.files[0];
+    if(!file){ return; }
+    var reader = new FileReader();
+    reader.onload = function(e){
+      logoPreview.innerHTML = '<img src="' + e.target.result + '" alt="Group logo">';
+      selectLogoOpt(null);
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // Colour picker: sets the live accent colour used inside the Build tab's phone screen
+  var swatches = document.querySelectorAll('.swatch');
+  swatches.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      viewBuild.style.setProperty('--live-accent', btn.getAttribute('data-color'));
+      swatches.forEach(function(s){ s.setAttribute('aria-pressed', s === btn ? 'true' : 'false'); });
+    });
+  });
+
+  // Clear for next group
+  document.getElementById('reset-btn').addEventListener('click', function(){
+    Object.keys(fields).forEach(function(key){
+      var el = fields[key];
+      if(el){ el.value = ''; }
+    });
+    refresh();
+    logoPreview.innerHTML = DEFAULT_LOGO_HTML;
+    selectLogoOpt(null);
+    logoFile.value = '';
+    viewBuild.style.setProperty('--live-accent', '#2f5fff');
+    swatches.forEach(function(s, i){ s.setAttribute('aria-pressed', i === 0 ? 'true' : 'false'); });
+  });
+
+  refresh();
+})();
+</script>
+
+</body></html>
